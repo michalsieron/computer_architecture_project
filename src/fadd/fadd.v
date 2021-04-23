@@ -16,12 +16,10 @@ wire [7:0] exponent_b = b[30:23];
 wire [24:0] fraction_b = |exponent_b ? {2'b01, b[22:0]} : 25'b0; // TODO: don't treat denormalized numbers as 0
 
 // small alu
-// wire [7:0] exponent_diff = (|exponent_a[7:0] ? exponent_a : exponent_a - 1) - (|exponent_b[7:0] ? exponent_b : exponent_b + 1);
 wire [7:0] exponent_diff = exponent_a - exponent_b;
 
 // select signal mux
-wire [24:0] fraction_diff = fraction_a - fraction_b;
-wire select = |exponent_diff ? exponent_diff[7] : fraction_diff[24];
+wire select = a[30:0] < b[30:0];
 
 wire [7:0] exponent_diff_abs = exponent_diff[7] ? -exponent_diff : exponent_diff;
 
@@ -34,7 +32,6 @@ wire [24:0] fraction_smaller = fraction_tmp >> exponent_diff_abs;
 
 // sign muxes
 wire sign_larger = select ? sign_b : sign_a;
-wire sign_smaller = select ? sign_a : sign_b;
 
 // big alu
 wire [24:0] fraction_prenorm = sign_a ^ sign_b ? fraction_larger - fraction_smaller : fraction_larger + fraction_smaller;
@@ -53,7 +50,7 @@ always @(*) begin
     exponent_postnorm = exponent_larger;
     if (sign_a ^ sign_b) begin
         for (index = 22; index >= 0; index--) begin
-            if (fraction_prenorm[23] == 0) begin
+            if (fraction_postnorm[23] == 0) begin
                 fraction_postnorm = fraction_postnorm << 1;
                 exponent_postnorm = exponent_postnorm - 1;
             end
@@ -70,18 +67,19 @@ always @(*) begin
 
 // exception checking
     
-    if ((&a[30:23] && |a[22:0]) || (&b[30:23] && |b[22:0])) begin // exp is 1s and fraction has at least one 1
-        // NaN
-        out = 32'h7FC00000;
-    end else if ((&a[30:23] || &b[30:23]) && a[31] == b[31]) begin // exp is 1s
-        // ±∞
-        out = {a[31], 31'h7F800000};
-    end else if ((&a[30:23] || &b[30:23]) && a[31] != b[31]) begin // ∞ - ∞
-        // NaN
-        out = 32'h7FC00000;
-    end else if (&exponent_postnorm) begin
-        out = {sign_larger, 8'hFF, 23'h0};
-    end else if (exponent_postnorm == 8'd0) begin
+    // if ((&a[30:23] && |a[22:0]) || (&b[30:23] && |b[22:0])) begin // exp is 1s and fraction has at least one 1
+    //     // NaN
+    //     out = 32'h7FC00000;
+    // end else if ((&a[30:23] || &b[30:23]) && a[31] == b[31]) begin // exp is 1s
+    //     // ±∞
+    //     out = {a[31], 31'h7F800000};
+    // end else if ((&a[30:23] || &b[30:23]) && a[31] != b[31]) begin // ∞ - ∞
+    //     // NaN
+    //     out = 32'h7FC00000;
+    // end else if (&exponent_postnorm) begin
+    //     out = {sign_larger, 8'hFF, 23'h0};
+    // end else 
+    if (exponent_postnorm == 8'd0) begin
         out = 32'h0;
     end else begin
         out = {sign_larger, exponent_postnorm, fraction_postnorm[22:0]};
