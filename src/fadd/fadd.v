@@ -24,24 +24,24 @@ wire select = a[30:0] < b[30:0];
 wire [7:0] exponent_diff_abs = exponent_diff[7] ? -exponent_diff : exponent_diff;
 
 // fraction muxes
-wire [24:0] fraction_larger = select ? fraction_b : fraction_a;
-wire [24:0] fraction_tmp = select ? fraction_a : fraction_b;
+wire [27:0] fraction_larger = {select ? fraction_b : fraction_a, 3'b000};
+wire [27:0] fraction_tmp = {select ? fraction_a : fraction_b, 3'b000};
 
 // fraction shift right
-wire [24:0] fraction_smaller = fraction_tmp >> exponent_diff_abs;
+wire [27:0] fraction_smaller = fraction_tmp >> exponent_diff_abs;
 
 // sign muxes
 wire sign_larger = select ? sign_b : sign_a;
 
 // big alu
-wire [24:0] fraction_prenorm = sign_a ^ sign_b ? fraction_larger - fraction_smaller : fraction_larger + fraction_smaller;
+wire [27:0] fraction_prenorm = sign_a ^ sign_b ? fraction_larger - fraction_smaller : fraction_larger + fraction_smaller;
 
 // exponent mux
 wire [7:0] exponent_larger = select ? exponent_b : exponent_a;
 
 // normalise block
 integer index;
-reg [24:0] fraction_postnorm;
+reg [27:0] fraction_postnorm;
 reg [7:0] exponent_postnorm;
 
 always @(*) begin
@@ -50,13 +50,13 @@ always @(*) begin
     exponent_postnorm = exponent_larger;
     if (sign_a ^ sign_b) begin
         for (index = 22; index >= 0; index--) begin
-            if (fraction_postnorm[23] == 0) begin
+            if (fraction_postnorm[26] == 0) begin
                 fraction_postnorm = fraction_postnorm << 1;
                 exponent_postnorm = exponent_postnorm - 1;
             end
         end
     end else begin
-        if (fraction_prenorm[24]) begin
+        if (fraction_prenorm[27]) begin
             fraction_postnorm = fraction_prenorm >> 1;
             exponent_postnorm = exponent_larger + 1;
         end else begin
@@ -78,11 +78,18 @@ always @(*) begin
     //     out = 32'h7FC00000;
     // end else if (&exponent_postnorm) begin
     //     out = {sign_larger, 8'hFF, 23'h0};
-    // end else 
+    // end else
+
+    if (fraction_postnorm[2] & |fraction_postnorm[1:0]) begin
+        fraction_postnorm[27:3] = fraction_postnorm[27:3] + 1;
+    end else if (&fraction_postnorm[3:2] & !(|fraction_postnorm[1:0])) begin
+        fraction_postnorm[27:3] = fraction_postnorm[27:3] + 1;
+    end
+
     if (exponent_postnorm == 8'd0) begin
         out = 32'h0;
     end else begin
-        out = {sign_larger, exponent_postnorm, fraction_postnorm[22:0]};
+        out = {sign_larger, exponent_postnorm, fraction_postnorm[25:3]};
     end
 end
 
