@@ -17,12 +17,6 @@ module fadd_a1 (
     assign {sign_a, exponent_a, fraction_a} = a;
     assign {sign_b, exponent_b, fraction_b} = b;
 
-always @(exponent_a or exponent_b) begin
-    $display("a: %b, b: %b", a, b);
-    $display("a: %h, b: %h", a, b);
-    $display("exp_a: %h, exp_b: %h", exponent_a, exponent_b);
-end
-
     wire [8:0] exponent_diff;
     wire [7:0] exponent_diff_abs, exponent_larger;
 
@@ -45,9 +39,9 @@ end
 
     assign fraction_smaller = sticky_bit ? ~fraction_shifted : fraction_shifted;
 
-    u2_adder U2A (fraction_larger, fraction_smaller, sticky_bit, fraction_preout);
+    wire ovf;
 
-    wire ovf = fraction_preout[23];
+    u2_adder U2A (fraction_larger, fraction_smaller, sticky_bit, fraction_preout, ovf);
 
     assign fraction_abs = fraction_preout[23] ? -fraction_preout : fraction_preout;
 
@@ -55,7 +49,7 @@ end
 
     wire [7:0] exponent_out = ovf ? exponent_larger + 1 : exponent_larger;
 
-    wire sign_out = a[30:0] < b[30:0] ? sign_b : sign_a;
+    wire sign_out = (sign_d ? sign_b : sign_a) ^ fraction_preout[23] ^ ovf;
 
     always @(*) begin
         out = {sign_out, exponent_out, fraction_out};
