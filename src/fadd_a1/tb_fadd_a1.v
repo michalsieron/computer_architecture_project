@@ -18,12 +18,6 @@ initial begin
 	$dumpfile("fadd_a1_out.vcd");
 	$dumpvars(0, tb_fadd_a1);
 
-    test_case(32'hc9e2_abbb, 32'h49f7_aeb5, 32'h48d4_0be8);
-    test_case(32'h49f7_aeb5, 32'hc9e2_abbb, 32'h48d4_0be8);
-    test_case(32'hc9c8_6b2c, 32'h49d8_5aad, 32'h487f_7c08);
-    test_case(32'h49d8_5aad, 32'hc9c8_6b2c, 32'h487f_7c08);
-    test_case(32'h49e6_6679, 32'h49dc_49f1, 32'h4a61_5835);
-    test_case(32'h49dc_49f1, 32'h49e6_6679, 32'h4a61_5835);
     test_case(32'h0000_0000, 32'h0000_0000, 32'h0000_0000); // 0 + 0 = 0
     test_case(32'h0000_0000, 32'h8000_0000, 32'h0000_0000); // 0 - 0 = 0
     test_case(32'h8000_0000, 32'h0000_0000, 32'h8000_0000); // -0 + 0 = -0
