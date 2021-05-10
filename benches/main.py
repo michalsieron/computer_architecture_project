@@ -61,6 +61,7 @@ def normalized_bits_to_denormalized_bits(bits):
     s, e, f = bits[0], bits[1:9], bits[9:]
     if any(e):
         e_bin = "".join(map(str, e))
+        new_e_int = int(e_bin, 2) + 1
         new_e_bin = bin(new_e_int)[2:].zfill(8)
         e = [int(b) for b in new_e_bin]
 
@@ -80,11 +81,11 @@ def denormalized_bits_to_normalized_bits(bits):
             break
 
         new_f = [*new_f[1:], 0]
-        new_e_int += 1
-    
+        new_e_int -= 1
+
     new_e_bin = bin(new_e_int)[2:].zfill(8)
     new_e = [int(b) for b in new_e_bin]
-    
+
     return [s, *new_e, *new_f[1:]]
 
 
@@ -154,11 +155,11 @@ def main():
         a_hex_float, b_hex_float = float_to_hex(a_float), float_to_hex(b_float)
         a_hex_denorm = float_to_denormalized_hex(a_float)
         b_hex_denorm = float_to_denormalized_hex(b_float)
-        
+
         tb_fadd_tests += f"\ttest_case(32'h{a_hex_float}, 32'h{b_hex_float});\n"
         tb_fadd_a1_tests += f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
         double_result_list.append(add_doubles(a, b))
-    
+
     with open("../src/fadd/tb_fadd_bench.v", "w") as f:
         f.write(tb_fadd.replace("##REPLACE_THIS##", tb_fadd_tests))
 
