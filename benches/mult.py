@@ -123,7 +123,7 @@ NUMBER_OF_TESTS = 1000
 def main():
     tb_fmult_tests = ""
     tb_fmult_a1_tests = ""
-    double_mult_results = ""
+    double_mult_results = []
     for _ in range(NUMBER_OF_TESTS):
         a, b = generate_random(), generate_random()
         a_double, b_double = py2double(a), py2double(b)
@@ -135,16 +135,47 @@ def main():
         
         tb_fmult_tests += f"\ttest_case(32'h{a_hex_float}, 32'h{b_hex_float});\n"
         tb_fmult_a1_tests += f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
-        double_mult_results += f"{double_to_hex(a_double)},{double_to_hex(b_double)},{double_to_hex(add_doubles(a, b))}\n"
+        double_mult_results.append(mult_doubles(a, b))
 
-    with open("tb_fmult_bench.v", "w") as f:
+    with open("../src/fmult/tb_fmult_bench.v", "w") as f:
         f.open(tb_fmult.replace("##REPLACE_THIS##", tb_fmult_tests))
     
-    # with open("tb_fmult_a1_bench.v", "w") as f:
+    # with open("../src/fmult/tb_fmult_a1_bench.v", "w") as f:
     #     f.write(tb_fmult_a1.replace("##REPLACE_THIS##", tb_fmult_a1_tests))
 
-    # with open("results_doubles_mult.csv", "w") as f:
-    #     f.write(double_mult_results)
+    subprocess.run(["iverilog", "tb_fmult_bench.v"], cwd="../src/fmult/")
+    subprocess.run(["iverilog", "tb_fmult_a1_bench.v"], cwd="../src/fmult_a1/")
+
+    results_float = (
+        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fmult/")
+        .stdout.decode("utf8")
+        .splitlines()
+    )
+    float_result_list = [hex_to_float(h) for h in results_float]
+    results_denorm = (
+        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fmult_a1/")
+        .stdout.decode("utf8")
+        .splitlines()
+    )
+    denorm_result_list = [denormalized_hex_to_float(h) for h in results_denorm]
+
+    denorm_errors = []
+    float_errors = []
+    print()
+    for denorm, fnorm, double in zip(
+        denorm_result_list,
+        float_result_list,
+        double_mult_results,
+    ):
+        denorm_errors.append((double - denorm) / double)
+        float_errors.append((double - fnorm) / double)
+
+    print(f"denormalized: {mean(denorm_errors)} ± {stdev(denorm_errors)}")
+    print(f"float 754: {mean(float_errors)} ± {stdev(float_errors)}")
+
+    subprocess.run(["rm", "./utils.so"])
+    subprocess.run(["rm", "../src/fmult/a.out", "../src/fmult/tb_fmult_bench.v"])
+    subprocess.run(["rm", "../src/fmult_a1/a.out", "../src/fmult_a1/tb_fmult_a1_bench.v"])
 
 if __name__ == "__main__":
     main()
