@@ -43,7 +43,7 @@ module fadd_a1 (
 
     u2_adder U2A (fraction_larger, fraction_smaller, sticky_bit, fraction_preout, ovf);
 
-    assign fraction_abs = fraction_preout[23] ? -fraction_preout : fraction_preout;
+    assign fraction_abs = (fraction_preout[23] & sticky_bit) ? -fraction_preout : fraction_preout;
 
     wire [22:0] fraction_out = ovf ? fraction_abs[23:1] : fraction_abs[22:0];
 
