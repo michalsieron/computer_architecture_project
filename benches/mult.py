@@ -10,15 +10,15 @@ py2float.restype = ctypes.c_float
 py2double = utils.py2double
 py2double.argtypes = [ctypes.c_float]
 py2double.restype = ctypes.c_double
-add_floats = utils.add_floats
-add_floats.argtypes = [ctypes.c_float, ctypes.c_float]
-add_floats.restype = ctypes.c_float
-add_doubles = utils.add_doubles
-add_doubles.argtypes = [ctypes.c_double, ctypes.c_double]
-add_doubles.restype = ctypes.c_double
-add_true_doubles = utils.add_true_doubles
-add_true_doubles.argtypes = [ctypes.c_double, ctypes.c_double]
-add_true_doubles.restype = ctypes.c_double
+mult_float = utils.mult_float
+mult_float.argtypes = [ctypes.c_float, ctypes.c_float]
+mult_float.restype = ctypes.c_float
+mult_doubles = utils.mult_doubles
+mult_doubles.argtypes = [ctypes.c_double, ctypes.c_double]
+mult_doubles.restype = ctypes.c_double
+mult_mult_doubles = utils.mult_true_doubles
+mult_mult_doubles.argtypes = [ctypes.c_double, ctypes.c_double]
+mult_mult_doubles.restype = ctypes.c_double
 
 def generate_random():
     return uniform(-73786971896791695000, 73786971896791695000)
@@ -76,32 +76,32 @@ def denormalized_bits_to_normalized_bits(bits):
     return [s, *new_e, *new_f[1:]]
 
 
-tb_fadd = """`timescale 1ps/1ps
+tb_fmult = """`timescale 1ps/1ps
 
-`include "fadd.v"
+`include "fmult.v"
 
-module fadd_tb;
+module fmult_tb;
 
 reg [31:0] a, b;
 wire [31:0] out;
 
 reg clk = 1'b1;
 
-fadd uut(a, b, out);
+fmult uut(a, b, out);
 
 always clk = #5 ~clk;
 
 initial begin
 
-	$dumpfile("fadd_out.vcd");
-	$dumpvars(0, fadd_tb);
+	$dumpfile("fmult_out.vcd");
+	$dumpvars(0, fmult_tb);
 ##REPLACE_THIS##
     $finish;
 end
 
 task test_case(
     input [31:0] a_in,
-    input [31:0] b_in
+    input [31:0] b_in,
 ); begin
     @(negedge clk) begin
         a = a_in;
@@ -116,14 +116,14 @@ endtask
 endmodule
 """
 
-tb_fadd_a1 = tb_fadd.replace("fadd", "fadd_a1")
+tb_fmult_a1 = tb_fmult.replace("fmult", "fmult_a1")
 
 NUMBER_OF_TESTS = 1000
 
 def main():
-    tb_fadd_tests = ""
-    tb_fadd_a1_tests = ""
-    double_add_results = ""
+    tb_fmult_tests = ""
+    tb_fmult_a1_tests = ""
+    double_mult_results = ""
     for _ in range(NUMBER_OF_TESTS):
         a, b = generate_random(), generate_random()
         a_double, b_double = py2double(a), py2double(b)
@@ -133,18 +133,18 @@ def main():
         a_hex_denorm = bits_to_hex(normalized_bits_to_denormalized_bits(hex_to_bits(float_to_hex(a_float))))
         b_hex_denorm = bits_to_hex(normalized_bits_to_denormalized_bits(hex_to_bits(float_to_hex(b_float))))
         
-        tb_fadd_tests += f"\ttest_case(32'h{a_hex_float}, 32'h{b_hex_float});\n"
-        tb_fadd_a1_tests += f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
-        double_add_results += f"{double_to_hex(a_double)},{double_to_hex(b_double)},{double_to_hex(add_doubles(a, b))}\n"
+        tb_fmult_tests += f"\ttest_case(32'h{a_hex_float}, 32'h{b_hex_float});\n"
+        tb_fmult_a1_tests += f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
+        double_mult_results += f"{double_to_hex(a_double)},{double_to_hex(b_double)},{double_to_hex(add_doubles(a, b))}\n"
+
+    with open("tb_fmult_bench.v", "w") as f:
+        f.open(tb_fmult.replace("##REPLACE_THIS##", tb_fmult_tests))
     
-    with open("tb_fadd_bench.v", "w") as f:
-        f.write(tb_fadd.replace("##REPLACE_THIS##", tb_fadd_tests))
+    # with open("tb_fmult_a1_bench.v", "w") as f:
+    #     f.write(tb_fmult_a1.replace("##REPLACE_THIS##", tb_fmult_a1_tests))
 
-    with open("tb_fadd_a1_bench.v", "w") as f:
-        f.write(tb_fadd_a1.replace("##REPLACE_THIS##", tb_fadd_a1_tests))
-
-    with open("results_doubles.csv", "w") as f:
-        f.write(double_add_results)
+    # with open("results_doubles_mult.csv", "w") as f:
+    #     f.write(double_mult_results)
 
 if __name__ == "__main__":
     main()

@@ -23,3 +23,15 @@ double add_doubles(double a, double b) {
 double add_true_doubles(double a, double b) {
     return a + b;
 }
+
+float mult_floats(float a, float b) {
+    return a * b;
+}
+
+double mult_doubles(double a, double b) {
+    return py2double(a) * py2double(b);
+}
+
+double mult_true_doubles(double a, double b) {
+    return a * b;
+}
