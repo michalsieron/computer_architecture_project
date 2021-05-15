@@ -26,7 +26,8 @@ add_true_doubles.restype = ctypes.c_double
 
 
 def generate_random():
-    return uniform(-73786971896791695000, 73786971896791695000)
+    # return uniform(-73786971896791695000, 0)
+    return uniform(0, 73786971896791695000)
 
 
 def double_to_hex(d):
@@ -185,14 +186,17 @@ def main():
     denorm_errors = []
     float_errors = []
     print()
+    fp_out = open("add_out.csv", "w")
     for denorm, fnorm, double in zip(
         denorm_result_list,
         float_result_list,
         double_result_list,
     ):
+        fp_out.write(f"{denorm},{fnorm},{double}\n")
         denorm_errors.append((double - denorm) / double)
         float_errors.append((double - fnorm) / double)
 
+    fp_out.close()
     print(f"denormalized: {mean(denorm_errors)} ± {stdev(denorm_errors)}")
     print(f"float 754: {mean(float_errors)} ± {stdev(float_errors)}")
 
