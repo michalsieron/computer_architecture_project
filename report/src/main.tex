@@ -1,0 +1,111 @@
+\documentclass{article}
+
+% \usepackage{showframe}
+% \usepackage[export]{adjustbox}
+\usepackage[a4paper, vmargin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{polski}
+\usepackage{indentfirst}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{hyperref}
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\lhead{Architektura Komputerów 2}
+\rhead{\thepage}
+
+\begin{document}
+
+% strona tytułowa
+\begin{titlepage}
+	\clearpage
+	\thispagestyle{empty}
+	\pagenumbering{gobble}
+    \centering
+    
+	{\LARGE Architektura Komputerów 2 \par}
+	
+	\vspace{1.5cm}
+	
+	{\huge\bfseries Liczby zdenormalizowane\par}
+	
+	\vspace{1.5cm}
+	{\large czwartek nieparzysty, 18:55\par}
+
+	\vspace{1cm}
+    \parbox{0.4\linewidth}{
+	    \centering
+	    {\Large Michał \textsc{Sieroń}\par}
+	    {\large 256 259\par}
+	}
+    \hfill
+    \parbox{0.4\linewidth}{
+	    \centering
+	    {\Large Paweł \textsc{Różański}\par}
+	    {\large 252 772\par}
+	}
+
+	\vspace{1.5cm}
+	{\large prowadzący\par}
+	{\large dr inż. Piotr \textsc{Patronik}\par}
+    
+	\vfill
+
+	{\large Informatyka Techniczna, Wydział Elektroniki\par}
+	\vspace{0.5cm}
+	{\large \today\par}
+	\clearpage
+	\pagenumbering{arabic}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+\section{Wstęp}
+Zadanie projektowe polegało na analizie zawartości artykułu i implementacji przedstawionych układów w języku Verilog.
+Z powodu ograniczonego czasu na wykonanie projektu możliwe było zaimplemenetowanie jedynie układów A1 oraz M1 przedstawionych w artykule \cite{art:old}.
+
+Następnie zaimplementowano odpowiadajace im układy zgodne ze standardem IEEE 754 \cite{art:ieee754}.
+Dokonano również porównania błędów wynikajacych z użycia danej reprezentacji liczby zmiennoprzecinkowej. 
+
+
+\section{Opis koncepcji zapisu i formatu}
+% artykuł po polsku
+
+\section{Opis metody}
+% python wywołujacy veriloga
+
+\newpage
+\section{Opis implementacji}
+% Opis kodu w verilogu + schematy A1, M1
+
+\newpage
+\section{Różnice między metodami}
+% Opis i schematy IEEE 754 porównanie
+
+\section{Narzędzia}
+% Użyte narzędzia
+
+\section{Opis sposobu}
+% (w jaki sposób zrobilismy to badanie) - w jaki sposób były liczone błędy, ilość kropeczek, czego użyliśmy do uzyskania wyników
+
+\newpage
+\section{Wyniki pomiarów}
+% Wykresy 
+
+\newpage
+\section{Wnioski}
+
+
+\newpage
+\phantomsection
+\addcontentsline{toc}{section}{Literatura}
+\bibliography{bibliography}
+\bibliographystyle{plabbrv}
+
+
+\end{document}
