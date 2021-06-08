@@ -1,11 +1,12 @@
 module swap (
-    input [22:0] frac_a,
-    input [22:0] frac_b,
+    input [22:0] a,
+    input [22:0] b,
     input select,
-    output [23:0] frac_larger,
-    output [22:0] frac_smaller
+    output [23:0] swapped_a,
+    output [23:0] swapped_b
 );
 
-    assign {frac_larger, frac_smaller} = select ? {1'b0, frac_b, frac_a} : {1'b0, frac_a, frac_b};
+    assign swapped_a = {1'b0, select ? b : a};
+    assign swapped_b = {1'b0, select ? a : b};
 
 endmodule
