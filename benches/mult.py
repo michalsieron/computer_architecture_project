@@ -107,16 +107,16 @@ def denormalized_hex_to_float(h):
 
 tb_fmult = """`timescale 1ps/1ps
 
-`include "fmult.v"
+`include "fmult_ieee754.v"
 
-module fmult_tb;
+module tb_fmult_ieee754;
 
 reg [31:0] a, b;
 wire [31:0] out;
 
 reg clk = 1'b1;
 
-fmult uut(a, b, out);
+fmult_ieee754 uut(a, b, out);
 
 always clk = #5 ~clk;
 
@@ -143,7 +143,7 @@ endtask
 endmodule
 """
 
-tb_fmult_a1 = tb_fmult.replace("fmult", "fmult_a1")
+tb_fmult_denorm = tb_fmult.replace("fmult_ieee754", "fmult_denorm")
 
 NUMBER_OF_TESTS = 1000
 
@@ -151,7 +151,7 @@ NUMBER_OF_TESTS = 1000
 def main():
     double_result_list = []
     tb_fmult_tests = ""
-    tb_fmult_a1_tests = ""
+    tb_fmult_denorm_tests = ""
     for _ in range(NUMBER_OF_TESTS):
         a, b = generate_random(), generate_random()
         a_float, b_float = py2float(a), py2float(b)
@@ -161,26 +161,30 @@ def main():
         b_hex_denorm = float_to_denormalized_hex(b_float)
 
         tb_fmult_tests += f"\ttest_case(32'h{a_hex_float}, 32'h{b_hex_float});\n"
-        tb_fmult_a1_tests += f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
+        tb_fmult_denorm_tests += (
+            f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
+        )
         double_result_list.append(mult_doubles(a, b))
 
-    with open("../src/fmult/tb_fmult_bench.v", "w") as f:
+    with open("../src/fmult_ieee754/tb_fmult_ieee754_bench.v", "w") as f:
         f.write(tb_fmult.replace("##REPLACE_THIS##", tb_fmult_tests))
 
-    with open("../src/fmult_a1/tb_fmult_a1_bench.v", "w") as f:
-        f.write(tb_fmult_a1.replace("##REPLACE_THIS##", tb_fmult_a1_tests))
+    with open("../src/fmult_denorm/tb_fmult_denorm_bench.v", "w") as f:
+        f.write(tb_fmult_denorm.replace("##REPLACE_THIS##", tb_fmult_denorm_tests))
 
-    subprocess.run(["iverilog", "tb_fmult_bench.v"], cwd="../src/fmult/")
-    subprocess.run(["iverilog", "tb_fmult_a1_bench.v"], cwd="../src/fmult_a1/")
+    subprocess.run(
+        ["iverilog", "tb_fmult_ieee754_bench.v"], cwd="../src/fmult_ieee754/"
+    )
+    subprocess.run(["iverilog", "tb_fmult_denorm_bench.v"], cwd="../src/fmult_denorm/")
 
     results_float = (
-        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fmult/")
+        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fmult_ieee754/")
         .stdout.decode("utf8")
         .splitlines()
     )
     float_result_list = [hex_to_float(h) for h in results_float]
     results_denorm = (
-        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fmult_a1/")
+        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fmult_denorm/")
         .stdout.decode("utf8")
         .splitlines()
     )
@@ -204,9 +208,19 @@ def main():
     print(f"float 754: {mean(float_errors)} ± {stdev(float_errors)}")
 
     subprocess.run(["rm", "./utils.so"])
-    subprocess.run(["rm", "../src/fmult/a.out", "../src/fmult/tb_fmult_bench.v"])
     subprocess.run(
-        ["rm", "../src/fmult_a1/a.out", "../src/fmult_a1/tb_fmult_a1_bench.v"]
+        [
+            "rm",
+            "../src/fmult_ieee754/a.out",
+            "../src/fmult_ieee754/tb_fmult_ieee754_bench.v",
+        ]
+    )
+    subprocess.run(
+        [
+            "rm",
+            "../src/fmult_denorm/a.out",
+            "../src/fmult_denorm/tb_fmult_denorm_bench.v",
+        ]
     )
 
 

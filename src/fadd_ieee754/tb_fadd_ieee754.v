@@ -1,22 +1,22 @@
 `timescale 1ps/1ps
 
-`include "fadd.v"
+`include "fadd_ieee754.v"
 
-module fadd_tb;
+module tb_fadd_ieee754;
 
 reg [31:0] a, b;
 wire [31:0] out;
 
 reg clk = 1'b1;
 
-fadd uut(a, b, out);
+fadd_ieee754 uut(a, b, out);
 
 always clk = #5 ~clk;
 
 initial begin
 
-	$dumpfile("fadd_out.vcd");
-	$dumpvars(0, fadd_tb);
+	$dumpfile("fadd_ieee754_out.vcd");
+	$dumpvars(0, tb_fadd_ieee754);
 
     test_case(32'h4A36_00CA, 32'hC93C_97A8, 32'h4A06_DAE0);
     test_case(32'h498A_D804, 32'hCA1E_F022, 32'hC9B3_0840);

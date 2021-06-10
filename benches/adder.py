@@ -26,8 +26,8 @@ add_true_doubles.restype = ctypes.c_double
 
 
 def generate_random():
-    # return uniform(-73786971896791695000, 0)
-    return uniform(0, 73786971896791695000)
+    return uniform(-73786971896791695000, 0)
+    # return uniform(0, 73786971896791695000)
 
 
 def double_to_hex(d):
@@ -104,16 +104,16 @@ def denormalized_hex_to_float(h):
 
 tb_fadd = """`timescale 1ps/1ps
 
-`include "fadd.v"
+`include "fadd_ieee754.v"
 
-module fadd_tb;
+module tb_fadd_ieee754;
 
 reg [31:0] a, b;
 wire [31:0] out;
 
 reg clk = 1'b1;
 
-fadd uut(a, b, out);
+fadd_ieee754 uut(a, b, out);
 
 always clk = #5 ~clk;
 
@@ -140,7 +140,7 @@ endtask
 endmodule
 """
 
-tb_fadd_a1 = tb_fadd.replace("fadd", "fadd_a1")
+tb_fadd_denorm = tb_fadd.replace("fadd_ieee754", "fadd_denorm")
 
 NUMBER_OF_TESTS = 1000
 
@@ -148,7 +148,7 @@ NUMBER_OF_TESTS = 1000
 def main():
     double_result_list = []
     tb_fadd_tests = ""
-    tb_fadd_a1_tests = ""
+    tb_fadd_denorm_tests = ""
     for _ in range(NUMBER_OF_TESTS):
         a, b = generate_random(), generate_random()
         a_float, b_float = py2float(a), py2float(b)
@@ -158,26 +158,30 @@ def main():
         b_hex_denorm = float_to_denormalized_hex(b_float)
 
         tb_fadd_tests += f"\ttest_case(32'h{a_hex_float}, 32'h{b_hex_float});\n"
-        tb_fadd_a1_tests += f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
+        tb_fadd_denorm_tests += (
+            f"\ttest_case(32'h{a_hex_denorm}, 32'h{b_hex_denorm});\n"
+        )
         double_result_list.append(add_doubles(a, b))
 
-    with open("../src/fadd/tb_fadd_bench.v", "w") as f:
+    with open("../src/fadd_ieee754/tb_fadd_ieee754_bench.v", "w") as f:
         f.write(tb_fadd.replace("##REPLACE_THIS##", tb_fadd_tests))
 
-    with open("../src/fadd_a1/tb_fadd_a1_bench.v", "w") as f:
-        f.write(tb_fadd_a1.replace("##REPLACE_THIS##", tb_fadd_a1_tests))
+    with open("../src/fadd_denorm/tb_fadd_denorm_bench.v", "w") as f:
+        f.write(tb_fadd_denorm.replace("##REPLACE_THIS##", tb_fadd_denorm_tests))
 
-    subprocess.run(["iverilog", "tb_fadd_bench.v"], cwd="../src/fadd/")
-    subprocess.run(["iverilog", "tb_fadd_a1_bench.v"], cwd="../src/fadd_a1/")
+    print("files saved")
+
+    subprocess.run(["iverilog", "tb_fadd_ieee754_bench.v"], cwd="../src/fadd_ieee754/")
+    subprocess.run(["iverilog", "tb_fadd_denorm_bench.v"], cwd="../src/fadd_denorm/")
 
     results_float = (
-        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fadd/")
+        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fadd_ieee754/")
         .stdout.decode("utf8")
         .splitlines()
     )
     float_result_list = [hex_to_float(h) for h in results_float]
     results_denorm = (
-        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fadd_a1/")
+        subprocess.run(["./a.out"], stdout=subprocess.PIPE, cwd="../src/fadd_denorm/")
         .stdout.decode("utf8")
         .splitlines()
     )
@@ -186,7 +190,8 @@ def main():
     denorm_errors = []
     float_errors = []
     print()
-    fp_out = open("add_out.csv", "w")
+    fp_out = open("sub_out.csv", "w")
+    # fp_out = open("add_out.csv", "w")
     for denorm, fnorm, double in zip(
         denorm_result_list,
         float_result_list,
@@ -201,8 +206,16 @@ def main():
     print(f"float 754: {mean(float_errors)} ± {stdev(float_errors)}")
 
     subprocess.run(["rm", "./utils.so"])
-    subprocess.run(["rm", "../src/fadd/a.out", "../src/fadd/tb_fadd_bench.v"])
-    subprocess.run(["rm", "../src/fadd_a1/a.out", "../src/fadd_a1/tb_fadd_a1_bench.v"])
+    subprocess.run(
+        [
+            "rm",
+            "../src/fadd_ieee754/a.out",
+            "../src/fadd_ieee754/tb_fadd_ieee754_bench.v",
+        ]
+    )
+    subprocess.run(
+        ["rm", "../src/fadd_denorm/a.out", "../src/fadd_denorm/tb_fadd_denorm_bench.v"]
+    )
 
 
 if __name__ == "__main__":

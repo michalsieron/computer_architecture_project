@@ -1,19 +1,23 @@
 `timescale 1ps/1ps
 
-`include "fmult.v"
+`include "fmult_ieee754.v"
 
-module fmult_tb;
+module tb_fmult_ieee754;
 
 reg [31:0] a, b;
 wire [31:0] out;
 
 reg clk = 1'b1;
 
-fmult uut(a, b, out);
+fmult_ieee754 uut(a, b, out);
 
 always clk = #5 ~clk;
 
 initial begin
+
+	$dumpfile("fmult_out.vcd");
+	$dumpvars(0, tb_fmult_ieee754);
+
     test_case(32'h0200_0000, 32'h0200_0000, 32'h0000_0000);
     test_case(32'h4234_851F, 32'h427C_851F, 32'h4532_10E9); // 45.13 * 63.13 = 2849.0569;
     test_case(32'h4049_999A, 32'hC166_3D71, 32'hC235_5062); //3.15 * -14.39 = -45.3285

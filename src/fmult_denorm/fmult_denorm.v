@@ -1,4 +1,4 @@
-module fmult_a1
+module fmult_denorm
 (
     input [31:0] a,
     input [31:0] b,
@@ -25,10 +25,18 @@ module fmult_a1
     wire [22:0] fraction_out = fraction_product[46:24];
     
     // Calculating exponent
-    wire [7:0] exponent_out = exponent_a + exponent_b - 8'd127 + 1'd1;
+    wire [8:0] exponent_out = exponent_a + exponent_b - 8'd127 + 1'd1;
 
     always @(*) begin
-        out = {sign_out, exponent_out, fraction_out};
+        if (a == 32'd0 || b == 32'd0) begin
+            // a or b is 0
+            out = 32'd0;
+        end else if (exponent_out[8] == 1) begin
+            out = 32'd0;
+        end else begin
+            // normal result
+            out = {sign_out, exponent_out[7:0], fraction_out};
+        end
     end
 
 endmodule

@@ -1,22 +1,22 @@
 `timescale 1ps/1ps
 
-`include "fadd_a1.v"
+`include "fadd_denorm.v"
 
-module tb_fadd_a1;
+module tb_fadd_denorm;
 
 reg [31:0] a, b;
 wire [31:0] out;
 
 reg clk = 1'b1;
 
-fadd_a1 uut(a, b, out);
+fadd_denorm uut(a, b, out);
 
 always clk = #5 ~clk;
 
 initial begin
 
-	$dumpfile("fadd_a1_out.vcd");
-	$dumpvars(0, tb_fadd_a1);
+	$dumpfile("fadd_denorm_out.vcd");
+	$dumpvars(0, tb_fadd_denorm);
 
     test_case(32'h0000_0000, 32'h0000_0000, 32'h0000_0000); // 0 + 0 = 0
     test_case(32'h0000_0000, 32'h8000_0000, 32'h0000_0000); // 0 - 0 = 0
