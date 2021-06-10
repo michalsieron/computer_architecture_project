@@ -108,21 +108,42 @@ Implementacja układu dodawania liczb zmiennoprzecinkowych została wykonana na 
 modelu układu z artykułu \cite{art:old}.
 Według nazewnictwa z artykułu układ dodawania, który odwzorowaliśmy, to \emph{A1}. 
 Jest to najprostsza wersja dodawania dwóch liczb zdenormalizowanych.
-Występuje wiele podobieństw względem zwykłej implementacji układu dodawania, a główną różnicą jest brak bloku normalizowania wyników po obliczeniu sumy.
-Implementację układu zaczęliśmy od dokładnego przeczytania opisu przedstawionego w~artykule, a następnie stworzeniu podstawowych bloków do obliczeń zawartych na diagramie.
-Były to między innymi bloki dodawania dwóch liczb w systemie U2, czy też blok zamiany wartości.
-Wyznaczenie znaku w przypadku liczb zdenormalizowanych jest trudniejsze, ponieważ nie możemy go otrzymać w ten sam, bezpośredni sposób jak w liczbach znormalizowanych.
-Aby sobie z tym poradzić, autorzy artykułu wprowadzili specjalny bit (w artykule \cite{art:old} nazwany sticky bit), który decydował czy przeniesienie wejściowe do sumatora powinno być ustawione na 1, czy na 0.
+% schemat dodawania zdenormalizowanego
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{figures/diagram_add_denorm.pdf}
+	\caption{Schemat układu dodawania - zdenormalizowane}
+	\label{fig:diagram_add_denorm}
+\end{figure}
 
-Kolejną implementacją, którą wykonaliśmy było stworzenie układu mnożącego dwie liczby zmiennoprzecinkowe pojedynczej precyzji, który tak samo jak układ dodawania pochodzi z artykułu \cite{art:old}.
+% schemat dodawania IEEE-754
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{figures/diagram_add_ieee754.pdf}
+	\caption{Schemat układu dodawania - \emph{IEEE-754}}
+	\label{fig:diagram_add_ieee754}
+\end{figure}
 Autorzy nadali mu nazwę \emph{M}.
 Jest to pierwsza zaproponowana przez autorów wersja implementacji układu mnożenia liczb zdenormalizowanych.
 Podobnie jak układ dodawania, największą jego różnicą jest brak układu normalizacji wyniku.
 Implemetancja układu mnożenia zdenormalizowanych liczb zmiennoprzecinkowych została wykonana w oparciu o diagram i opis układu \emph{M} w artykule.
 W~architekturze, która została użyta w~układzie mnożenia, autorzy zakładają, że wynik mnożenia dwóch liczb zawsze zakończy się przepełnieniem, wobec tego wykładnik jest zawsze zwiększany jeden, a mantysa przesuwana  o jedna pozycję w prawo.
 
+% schemat mnożenia zdenormalizowanego
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{figures/diagram_mul_denorm.pdf}
+	\caption{Schemat układu mnożenia - zdenormalizowane}
+	\label{fig:diagram_mul_denorm}
+\end{figure}
 
-% Opis kodu w verilogu + schematy A1, M
+% schemat mnozenia IEEE-754
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\textwidth]{figures/diagram_mul_ieee754.pdf}
+	\caption{Schemat układu mnożenia - \emph{IEEE-754}}
+	\label{fig:diagram_mul_ieee754}
+\end{figure}
 
 \section{Różnice między metodami}
 
@@ -145,7 +166,49 @@ Kod był testowany wykonywany w subsystemie do systemu Windowsa (WSL).
 % (w jaki sposób zrobilismy to badanie) - w jaki sposób były liczone błędy, ilość kropeczek, czego użyliśmy do uzyskania wyników
 
 \section{Wyniki pomiarów}
-% Wykresy 
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=0.4\textheight]{figures/add_relative.png}
+	\caption{Błąd względny - dodawanie}
+	\label{fig:add_relative}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=0.4\textheight]{figures/add_ulp.png}
+	\caption{Błąd bezwzględny - dodawanie}
+	\label{fig:add_ulp}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=0.4\textheight]{figures/sub_relative.png}
+	\caption{Błąd względny - odejmowanie}
+	\label{fig:sub_relative}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=0.4\textheight]{figures/sub_ulp.png}
+	\caption{Błąd bezwzględny - odejmowanie}
+	\label{fig:sub_ulp}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=0.4\textheight]{figures/mul_relative.png}
+	\caption{Błąd względny - mnożenie}
+	\label{fig:mul_relative}
+\end{figure}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=0.4\textheight]{figures/mul_ulp.png}
+	\caption{Błąd bezwzględny - mnożenie}
+	\label{fig:mul_ulp}
+\end{figure}
 
 \section{Wnioski}
 
