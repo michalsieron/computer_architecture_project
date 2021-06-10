@@ -183,19 +183,41 @@ Ponieważ wynik mnożenia dwóch licz znormalizowanych gwarantuje pojawienie si�
 
 
 \section{Narzędzia}
-Narzędziami, które zostały użyte przez znas są między innymi 3 języki programowania. Najbardziej korzystaliśmy z języka Verilog, który posłużył nam do łatwiejszej implementacji układów mnożenia i dodawania.
-Języka C użyliśmy do implementacji układu porówania wyników a Pythona do przeprowadzenia wszystkich potrzebny testów wraz w wykonaniem wykresów obrazujących wyniki.
-Przy implementacji z języku Verilog używaliśmy kompilatora iVerilog.
-A do sprawdzenia poprawności wyników poszczególnych bloków i debugowania programu GTKWave.
-Do utworzenia układów diagramów została użyta aplikacja Draw.io.
-Całość kodu była tworzona w programie Visual Studio Code.
-Kod był testowany wykonywany w subsystemie do systemu Windowsa (WSL).
+Narzędziami, które zostały przez nas użyte były między innymi 3 języki programowania.
+Najbardziej korzystaliśmy z języka \emph{Verilog}, który posłużył nam do implementacji układów dodawania i mnożenia.
+W \emph{C} napisaliśmy funkcje konwertujące wartości typu \texttt{double} na \texttt{float} konieczne do porówania wyników.
+\emph{Python} służył jako język, z którego wywoływane były wszystkie polecenia kompilujące wcześniej wspomniane funkcje w \emph{C}, generujące oraz uruchamiające pliki testowe \emph{Veriloga}.
+Przy użyciu \emph{Pythona} obliczaliśmy również błędy obliczeniowe wynikające z formatu zdenormalizowanych liczb zmiennoprzecinkowych oraz wykresy je prezentujące.
+Do tworzenia wykresów posłużyliśmy się biblioteką \emph{Matplotlib}.
+Narzędzie \emph{Icarus Verilog} posłużyło nam do kompilacji i~uruchamiania modułów napisanych w języku \emph{Verilog}.
+Natomiast do sprawdzenia poprawności wyników poszczególnych bloków i debugowania programu używaliśmy programu \emph{GTKWave}.
+Do utworzenia diagramów została użyta aplikacja \url{diagrams.net}.
+Całość kodu była tworzona w programie \emph{Visual Studio Code}.
+Testowanie i uruchamianie miało miejsce w systemie Ubuntu na maszynie wirtualnej \emph{WSL 2}.
 
 
-% Użyte narzędzia
+\section{Opis sposobu testowania}
+Stworzone układy sumatora i mnożenia liczb zdenormalizowanych zostały przetestowane pod względem różnic pomiędzy wynikami w swoich odpowiednikach w implementacji \emph{IEEE-754}.
+Testowanie rozpoczeliśmy od wygenerowania liczb pseudolosowych w zakresie, w którym zadbaliśmy o to, aby nie doszło do przepełnienia wykładnika.
+Wygenerowana liczba utworzona została w języku \emph{Python}, więc była podwójnej precyzji.
+Przy pomocy zaimplementowanej przez nas funkcji, zmieniliśmy ją na liczbę pojedynczej precyzji.
 
-\section{Opis sposobu}
-% (w jaki sposób zrobilismy to badanie) - w jaki sposób były liczone błędy, ilość kropeczek, czego użyliśmy do uzyskania wyników
+Kolejnym krokiem w testowaniu było wykonanie odpowiednich dodawań lub mnożeń w zależności od testowanych układów.
+Program następnie startował symulator uruchamiający kolejne układy.
+Pierwszym z nich był zaimplementowany przez nas układ działający na liczbach zdenormalizowanych.
+Drugim był układ częściowo zgodny ze standardem \emph{IEEE-754}.
+Do tego obliczaliśmy wynik operacji na liczbach podwójnej precyzji, którego używaliśmy jako wartości referencyjnej do porównywania wyników.
+Tak otrzymane liczby były zapisywane do plików \emph{CSV}.
+
+Testowanie przeprowadzilismy dla następujących ilości wyników 100, 1 000, 10 000, 100 000, 1 000 000, 10 000 000.
+Uznaliśmy, że wykresy najlepiej obrazowały otrzymane wyniki przy 1 000 000 punktów.
+Możliwe jest wtedy zaobserwowanie szczegółów pozwalających na analizę wyników.
+Przy większych ilościach punktów, wykresy stawały się nieczytelne.
+
+Następnym krokiem było porównanie poszczególnych wartości liczb zdenormalizowanych i odpowiadającym im liczb referencyjnych.
+Dla każdego wyniku obliczyliśmy błąd względny używając wyniku liczb podwójnej precyzji jako wartości referencyjnej rysunki \ref{fig:add_relative}, \ref{fig:sub_relative}, \ref{fig:mul_relative}.
+Dodatkowo utworzyliśmy wykresy prezentujące błąd bezwzględny w ULP - rysunki \ref{fig:add_ulp}, \ref{fig:sub_ulp}, \ref{fig:mul_ulp}.
+
 
 \section{Wyniki pomiarów}
 \begin{figure}[H]
