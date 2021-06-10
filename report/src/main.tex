@@ -104,10 +104,15 @@ Utworzone pliki były następnie uruchamiane, a wyniki zapisywane w pliku \emph{
 
 
 \section{Opis implementacji}\label{sec:implementacja}
+
+\subsection{Układy dodawania}
 Implementacja układu dodawania liczb zmiennoprzecinkowych została wykonana na podstawie opisu oraz 
 modelu układu z artykułu \cite{art:old}.
 Według nazewnictwa z artykułu układ dodawania, który odwzorowaliśmy, to \emph{A1}. 
 Jest to najprostsza wersja dodawania dwóch liczb zdenormalizowanych.
+
+Implementację układu zaczęliśmy od dokładnego przeczytania opisu przedstawionego w~artykule, a następnie stworzeniu podstawowych bloków do obliczeń zawartych na diagramie \ref{fig:diagram_add_denorm}.
+
 % schemat dodawania zdenormalizowanego
 \begin{figure}[H]
 	\centering
@@ -116,6 +121,19 @@ Jest to najprostsza wersja dodawania dwóch liczb zdenormalizowanych.
 	\label{fig:diagram_add_denorm}
 \end{figure}
 
+Na początku układ oblicza różnicę wykładników, żeby następnie wyrównać drugą z nich do tej samej wartości wykładnika.
+Liczba z mniejszym wykładnikiem jest przesuwana w prawo o ilość bitów równą wartości różnicy wykładników.
+Jeżeli liczby mają różne znaki, to wyrównywana liczba jest dodatkowo negowana.
+Umożliwia to sumowanie mantys w U2 wykorzystując obliczony wcześniej bit \texttt{different\_signs} jako przeniesienie wejściowe.
+Wewnątrz sumatora wykrywane jest przepełnienie i po obliczeniu wartości bezwzględnej wyniku, wykorzystywane do ewentualnego przesunięcia go w prawo o jeden bit.
+W takim przypadku zwiększany jest też wykładnik wyjściowy.
+Wyznaczenie znaku w przypadku liczb zdenormalizowanych nie jest łatwe.
+Wynika to z faktu, że nawet gdy wykładnik jednej z liczb jest większy od drugiej, to różnica w mantysach może być jeszcze większa.
+Wobec tego, konieczne jest wykorzystanie znaków różnicy wykładników, sumy mantys oraz bitu \texttt{ovf} informującym o przepełnieniu.
+
+Zaimplementowany przez nas układ dodawania liczb znormalizowanych oparty jest o wersję zdenormalizowaną.
+Różnice zaznaczyliśmy na rysunku \ref{fig:diagram_add_ieee754} na zielono.
+
 % schemat dodawania IEEE-754
 \begin{figure}[H]
 	\centering
@@ -123,11 +141,19 @@ Jest to najprostsza wersja dodawania dwóch liczb zdenormalizowanych.
 	\caption{Schemat układu dodawania - \emph{IEEE-754}}
 	\label{fig:diagram_add_ieee754}
 \end{figure}
+
+% napisać o znaku
+Pierwszą zmianą jest warunkowe dodanie ukrytej jedynki.
+Drugą zaznaczoną zmianą jest blok normalizacyjny.
+Mantysa jest przesuwana w lewo dopóki na pozycji ukrytego bitu nie pojawi się 1.
+Natomiast inną zmianą, która nie jest uwzględniona na schemacie, jest szerokość bitowa sumy mantys.
+W wersji liczb znormalizowanych ma ona 48 bitów.
+
+\subsection{Układy mnożenia}
+
+Kolejnym układem, który zaimplementowaliśmy, był układ mnożący, który podobnie jak układ dodawania pochodzi z artykułu \cite{art:old}.
 Autorzy nadali mu nazwę \emph{M}.
-Jest to pierwsza zaproponowana przez autorów wersja implementacji układu mnożenia liczb zdenormalizowanych.
-Podobnie jak układ dodawania, największą jego różnicą jest brak układu normalizacji wyniku.
-Implemetancja układu mnożenia zdenormalizowanych liczb zmiennoprzecinkowych została wykonana w oparciu o diagram i opis układu \emph{M} w artykule.
-W~architekturze, która została użyta w~układzie mnożenia, autorzy zakładają, że wynik mnożenia dwóch liczb zawsze zakończy się przepełnieniem, wobec tego wykładnik jest zawsze zwiększany jeden, a mantysa przesuwana  o jedna pozycję w prawo.
+Jest to pierwsza wersja zaproponowanej przez autorów implementacji układu mnożenia liczb zdenormalizowanych.
 
 % schemat mnożenia zdenormalizowanego
 \begin{figure}[H]
@@ -137,6 +163,14 @@ W~architekturze, która została użyta w~układzie mnożenia, autorzy zakładaj
 	\label{fig:diagram_mul_denorm}
 \end{figure}
 
+W przeciwieństwie do sumatora, wyznaczenie znaku jest prostą operacją \texttt{XOR}.
+Wykładnik jest sumą wykładników wejściowych z odjętym obciążeniem.
+Autorzy przyjęli założenie, że operacja mnożenia mantys, zawsze zakończy się przepełnieniem.
+Wobec tego wykładnik wyjściowy jest zawsze zwiększany o jeden, a mantysa przesuwana w prawo.
+W przypadku braku wystąpienia przepełnienia, tracony jest jeden bit precyzji.
+
+Zmiany względem układu mnożącego liczby zgodne ze standardem \emph{IEEE-754} są w tym przypadku niewielkie.
+
 % schemat mnozenia IEEE-754
 \begin{figure}[H]
 	\centering
@@ -145,10 +179,8 @@ W~architekturze, która została użyta w~układzie mnożenia, autorzy zakładaj
 	\label{fig:diagram_mul_ieee754}
 \end{figure}
 
-\section{Różnice między metodami}
+Ponieważ wynik mnożenia dwóch licz znormalizowanych gwarantuje pojawienie się jedynki na jednym z dwóch najstarszych bitów wyniku, normalizacja sprowadza się do warunkowego przesunięcia w prawo w zależności od wystąpienia przepełnienia.
 
-Wynika to z faktu, że gdy porównujemy tylko wykładniki może się zdażyć ze operand z wyższego wykładnika będzie mniejszy niż drugi. 
-% Opis i schematy IEEE 754 porównanie
 
 \section{Narzędzia}
 Narzędziami, które zostały użyte przez znas są między innymi 3 języki programowania. Najbardziej korzystaliśmy z języka Verilog, który posłużył nam do łatwiejszej implementacji układów mnożenia i dodawania.
