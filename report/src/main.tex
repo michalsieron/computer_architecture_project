@@ -8,8 +8,6 @@
 \usepackage{indentfirst}
 \usepackage{fancyhdr}
 \usepackage{float}
-\usepackage{subcaption}
-\usepackage{multirow}
 \usepackage{hyperref}
 
 \pagestyle{fancy}
@@ -69,8 +67,8 @@
 Zadanie projektowe polegało na analizie zawartości artykułu i implementacji przedstawionych układów w języku \emph{Verilog}.
 Z powodu ograniczonego czasu na wykonanie projektu możliwe było zaimplemenetowanie jedynie układów \emph{A1} oraz \emph{M} przedstawionych w artykule \cite{art:old}.
 
-Następnie zaimplementowano odpowiadajace im układy zgodne ze standardem \emph{IEEE-754} \cite{art:ieee754}.
-Dokonano również porównania błędów wynikajacych z użycia danej reprezentacji liczby zmiennoprzecinkowej. 
+Następnie zaimplementowano odpowiadajace im układy zgodne ze standardem \emph{IEEE-754} \cite{art:ieee754} \cite{pdf:ieee754}.
+Dokonano również porównania błędów wynikajacych z~użycia danej reprezentacji liczby zmiennoprzecinkowej. 
 
 
 \section{Opis koncepcji zapisu i formatu}
@@ -126,10 +124,10 @@ Liczba z mniejszym wykładnikiem jest przesuwana w prawo o ilość bitów równ�
 Jeżeli liczby mają różne znaki, to wyrównywana liczba jest dodatkowo negowana.
 Umożliwia to sumowanie mantys w U2 wykorzystując obliczony wcześniej bit \texttt{different\_signs} jako przeniesienie wejściowe.
 Wewnątrz sumatora wykrywane jest przepełnienie i po obliczeniu wartości bezwzględnej wyniku, wykorzystywane do ewentualnego przesunięcia go w prawo o jeden bit.
-W takim przypadku zwiększany jest też wykładnik wyjściowy.
-Wyznaczenie znaku w przypadku liczb zdenormalizowanych nie jest łatwe.
-Wynika to z faktu, że nawet gdy wykładnik jednej z liczb jest większy od drugiej, to różnica w mantysach może być jeszcze większa.
-Wobec tego, konieczne jest wykorzystanie znaków różnicy wykładników, sumy mantys oraz bitu \texttt{ovf} informującym o przepełnieniu.
+W~takim przypadku zwiększany jest też wykładnik wyjściowy.
+Wyznaczenie znaku w~przypadku liczb zdenormalizowanych nie jest łatwe.
+Wynika to z faktu, że nawet gdy wykładnik jednej z liczb jest większy od drugiej, to różnica w~mantysach może być jeszcze większa.
+Wobec tego, konieczne jest wykorzystanie znaków różnicy wykładników, sumy mantys oraz bitu \texttt{ovf} informującym o~przepełnieniu.
 
 Zaimplementowany przez nas układ dodawania liczb znormalizowanych oparty jest o wersję zdenormalizowaną.
 Różnice zaznaczyliśmy na rysunku \ref{fig:diagram_add_ieee754} na zielono.
@@ -166,7 +164,7 @@ Jest to pierwsza wersja zaproponowanej przez autorów implementacji układu mno�
 W przeciwieństwie do sumatora, wyznaczenie znaku jest prostą operacją \texttt{XOR}.
 Wykładnik jest sumą wykładników wejściowych z odjętym obciążeniem.
 Autorzy przyjęli założenie, że operacja mnożenia mantys, zawsze zakończy się przepełnieniem.
-Wobec tego wykładnik wyjściowy jest zawsze zwiększany o jeden, a mantysa przesuwana w prawo.
+Wobec tego wykładnik wyjściowy jest zawsze zwiększany o jeden, a~mantysa przesuwana w prawo.
 W przypadku braku wystąpienia przepełnienia, tracony jest jeden bit precyzji.
 
 Zmiany względem układu mnożącego liczby zgodne ze standardem \emph{IEEE-754} są w tym przypadku niewielkie.
@@ -183,8 +181,7 @@ Ponieważ wynik mnożenia dwóch licz znormalizowanych gwarantuje pojawienie si�
 
 
 \section{Narzędzia}
-Narzędziami, które zostały przez nas użyte były między innymi 3 języki programowania.
-Najbardziej korzystaliśmy z języka \emph{Verilog}, który posłużył nam do implementacji układów dodawania i mnożenia.
+Do implementacji układów dodawania i mnożenia użyliśmy języka \emph{Verilog}.
 W \emph{C} napisaliśmy funkcje konwertujące wartości typu \texttt{double} na \texttt{float} konieczne do porówania wyników.
 \emph{Python} służył jako język, z którego wywoływane były wszystkie polecenia kompilujące wcześniej wspomniane funkcje w \emph{C}, generujące oraz uruchamiające pliki testowe \emph{Veriloga}.
 Przy użyciu \emph{Pythona} obliczaliśmy również błędy obliczeniowe wynikające z formatu zdenormalizowanych liczb zmiennoprzecinkowych oraz wykresy je prezentujące.
@@ -220,6 +217,7 @@ Dodatkowo utworzyliśmy wykresy prezentujące błąd bezwzględny w ULP - rysunk
 
 
 \section{Wyniki pomiarów}
+
 \begin{figure}[H]
 	\centering
 	\includegraphics[height=0.4\textheight]{figures/add_relative.png}
@@ -264,7 +262,26 @@ Dodatkowo utworzyliśmy wykresy prezentujące błąd bezwzględny w ULP - rysunk
 	\label{fig:mul_ulp}
 \end{figure}
 
+
 \section{Wnioski}
+% Wyniki naszych badań są trudne do analizowania. 
+Podstawową i najbardziej zauważalną różnicą jest wydzielenie się dwóch grup punktów przedstawiających wyniki dla liczb zdenormalizowanych i znormalizowanych.
+W pomiarach widzimy różnicę w utracie dokładności poprzez przesunięcie wszystkich bitów w prawo i pozbycie się ukrytego bitu w liczbach zdenormalizowanych.
+Różnice w działaniu układów sprawiają, że implementacja dla liczb zdenormalizowanych jest prostsza, zużywa mniej komponentów, a przez to jest mniej energochłonna.
+
+Łatwo zaobserwować linie powstałe na wykresie.
+Ich obecność wynika ze stałej liczby bitów reprezentacji liczby.
+Ponieważ zbiór liczb możliwych do przedstawienia w każdym z badanych zapisów jest skończony, to wyniki są zaokrąglane, a widoczne linie są tego wynikiem.
+
+% dlatego zaproponowali nowe rozwiązanie \cite{art:new}
+
+% Kolejną różnicą, którą możemy zauważyć na każdym z rysunków jest to, że liczby zdenormalizowane posiadają większe różnicę i są bardziej rozrzucone po całym wykresie.
+
+
+% ponieważ podczas operacji odejmowania mantysy dążą do zera, to w ieee754 dwukrotnie większa ilość bitów (48) na wynik sprawia, że można wcześniej przesunięte bity "wrócić" podczas normalizacji, gdzie dla zdenormalizowanych nawet, gdyby te bity tam były, to nic by ich nie przesunęło bo nie ma normalizacji
+
+
+% Na rysunku \ref{fig:add_relative} czy też rysunku \ref{fig:add_ulp}
 
 
 \newpage
