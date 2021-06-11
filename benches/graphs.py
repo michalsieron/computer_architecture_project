@@ -24,10 +24,10 @@ fig2 = plt.figure(figsize=(12, 10), dpi=100)
 
 xs = data_s[:, 2]
 ys1 = np.fromiter(((r[2] - r[0]) / r[2] for r in data_s), dtype=float)
-plt.scatter(np.abs(xs), ys1, s=1)
+plt.scatter(np.abs(xs), np.abs(ys1), s=1)
 
 ys2 = np.fromiter(((r[2] - r[1]) / r[2] for r in data_s), dtype=float)
-plt.scatter(np.abs(xs), ys2, s=1)
+plt.scatter(np.abs(xs), np.abs(ys2), s=1)
 
 plt.figlegend(["Zdenormalizowane", "IEEE-754"], loc="upper right", bbox_to_anchor=(0.85, 0.85))
 plt.savefig("sub_relative.png", bbox_inches="tight")
@@ -62,10 +62,10 @@ fig5 = plt.figure(figsize=(12, 10), dpi=100)
 
 xs = data_s[:, 2]
 ys1 = np.fromiter((abs(r[2] - r[0]) / 2 ** 24 for r in data_s), dtype=float)
-plt.scatter(np.abs(xs), ys1, s=1)
+plt.scatter(np.abs(xs), np.abs(ys1), s=1)
 
 ys2 = np.fromiter((abs(r[2] - r[1]) / 2 ** 24 for r in data_s), dtype=float)
-plt.scatter(np.abs(xs), ys2, s=1)
+plt.scatter(np.abs(xs), np.abs(ys2), s=1)
 
 plt.figlegend(["Zdenormalizowane", "IEEE-754"], loc="upper left", bbox_to_anchor=(0.15, 0.85))
 plt.savefig("sub_ulp.png", bbox_inches="tight")
